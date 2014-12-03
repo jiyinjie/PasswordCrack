@@ -175,17 +175,38 @@ public class PasswordCrack {
 		
 	}
 	
-	private static String capitalize(String w, int index)
-	{
+	private static void casePermutations(String w){
 		char[] word = w.toCharArray();
-		word[index]+='A' - 'a';
-		return word.toString();
+		int n = (int) Math.pow(2, word.length);
+		for (int i = 0; i < n; i++){
+			char[] permutation = new char[word.length];
+			for(int j = 0; j < word.length; j++){
+				if (isBitSet(i, j)){
+					permutation[j] = Character.toUpperCase(word[j]);
+				} 
+				else{
+					permutation[j] = word[j];
+				}
+			}
+			mangled_dictionary.add(permutation.toString());
+		}
 	}
-
-	private static String lowercase(String w, int index)
-	{
-		char[] word = w.toCharArray();
-		word[index]+='a' - 'A';
-		return word.toString();
+	
+	private static boolean isBitSet(int n, int offset){
+		return (n >> offset & 1) != 0;
 	}
+	
+//	private static String capitalize(String w, int index)
+//	{
+//		char[] word = w.toCharArray();
+//		word[index]+='A' - 'a';
+//		return word.toString();
+//	}
+//
+//	private static String lowercase(String w, int index)
+//	{
+//		char[] word = w.toCharArray();
+//		word[index]+='a' - 'A';
+//		return word.toString();
+//	}
 }

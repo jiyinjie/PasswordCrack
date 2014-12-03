@@ -14,7 +14,7 @@ public class Password {
 		String[] parts = input.split(":");
 		account = parts[0];
 		salt = parts[1].substring(0,2);
-		passwordEncrypted = parts[1].substring(2,parts[1].length());
+		passwordEncrypted = parts[1];
 		uid = parts[2];
 		gid = parts[3];
 		fullname = parts[4];
@@ -28,7 +28,7 @@ public class Password {
 
 	public String getPasswordEncrypted() {
 		//TODO: Band-aid fix. Better to parse passwordEncrypted correctly in constructor
-		return salt+passwordEncrypted; 
+		return passwordEncrypted; 
 	}
 
 	public String getSalt() {
