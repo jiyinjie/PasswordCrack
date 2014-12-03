@@ -179,7 +179,7 @@ public class PasswordCrack {
 		
 	}
 	
-	private static void casePermutations(String w){
+	private static void casePermutations(String w, ArrayList<String> mangled){
 		char[] word = w.toCharArray();
 		int n = (int) Math.pow(2, word.length);
 		for (int i = 0; i < n; i++){
@@ -192,7 +192,7 @@ public class PasswordCrack {
 					permutation[j] = word[j];
 				}
 			}
-			mangled_dictionary.add(permutation.toString());
+			mangled.add(new String(permutation));
 		}
 	}
 	
