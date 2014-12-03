@@ -10,7 +10,7 @@ public class PasswordCrack {
 	
 	private static TreeSet<String> dictionary;
 	private static TreeSet<String> mangled_dictionary;
-	
+	private static TreeSet<String> double_mangled_dictionary;
 	private static ArrayList<Password> encrypted;
 	private static String[] decrypted;
 	
@@ -18,7 +18,6 @@ public class PasswordCrack {
 	public static void main (String[]args){
 
 		encrypted = new ArrayList<Password>();
-		mangled_dictionary = new TreeSet<String>();
 		dictionary = new TreeSet<String>();
 		
 		dictionary.addAll(parseInput(args[0]));
@@ -68,88 +67,78 @@ public class PasswordCrack {
 	private static void dictionaryAttack()
 	{
 		Iterator<String> dict_i;
+
+		//Mangle first word in dictionary
+		dict_i = dictionary.iterator();		
 		
-		//Check passwords against normal dictionary words
-		for(int enc_i= 0; enc_i < encrypted.size(); enc_i++)
-		{
-			Password p = encrypted.get(enc_i);
-			String encrypted_password = p.getPasswordEncrypted();
-			String salt = p.getSalt();
-			
-			//Adds username and fullname to dictionary
-			//TODO:Add fullname, last name, and first name
-			dictionary.add(p.getAccount());
-			dictionary.add(p.getFullname());
-			
-			dict_i= dictionary.iterator();
-			
-			//Check current password against dictionary word
-			while(dict_i.hasNext())
+		//Check password against normal and mangled-once dictionary words
+		while(dict_i.hasNext() && !finished())
 			{
-				String word = dict_i.next();
-				String guess = jcrypt.crypt(salt, word);
-				
-				if(encrypted_password.equals(guess))
+				if(!check(dictionary))
 				{
-					decrypted[enc_i] = word;
-					break;
+					//Create mangled words from single dictionary word and add to mangle dictionary
+					mangled_dictionary = new TreeSet<String>();
+					mangleWord(mangled_dictionary, dict_i.next());
+					
+					if(!check(mangled_dictionary))
+					{
+						//From mangled words, create double mangled words and add to double dictionary
+						//Iterator<String> mangled_i = mangled_dictionary.iterator();	
+						//double_mangled_dictionary = new TreeSet<String>();
+						//while(mangled_i.hasNext())
+					//	{
+						//	mangleWord(double_mangled_dictionary, mangled_i.next());
+						//}
+							//Check passwords against double mangled words
+						//	check(double_mangled_dictionary);
+					}
 				}
+				System.gc();
 			}
-			
-			
-			//Remove names from dictionary
-			//dictionary.remove(dictionary.size()-1);
-			//dictionary.remove(dictionary.size()-1);
-		}
-		
-		dict_i = dictionary.iterator();
-		//Mangle Dictionary
-		while(dict_i.hasNext())
+	}
+	//The check function determines if any word in the given dictionary dict is a password for any user.
+	private static boolean check(TreeSet<String> dict)
+	{
+		Iterator<String> it = dict.iterator();
+		while(it.hasNext())
 		{
-			mangleWord(mangled_dictionary, dict_i.next());
-		}
-		
-		
-		//Check password against mangled dictionary words
-		for(int enc_i= 0; enc_i < encrypted.size(); enc_i++)
-		{
-			if(decrypted[enc_i] == null)
+			String word = it.next();
+			
+			for(int enc_i= 0; enc_i < encrypted.size(); enc_i++)
 			{
-				dict_i = mangled_dictionary.iterator();
-				Password p = encrypted.get(enc_i);
-				String encrypted_password = p.getPasswordEncrypted();
-				String salt = p.getSalt();
-				
-				//Adds username and fullname to dictionary
-				//dictionary.add(p.getAccount());
-				//dictionary.add(p.getFullname());
-				
-				//Check passwords against normal dictionary words
-				while(dict_i.hasNext())
+				if(decrypted[enc_i] == null)
 				{
-					String word = dict_i.next();
+					Password p = encrypted.get(enc_i);
+					String encrypted_password = p.getPasswordEncrypted();
+					String salt = p.getSalt();
 					String guess = jcrypt.crypt(salt, word);
 					
 					if(encrypted_password.equals(guess))
 					{
 						decrypted[enc_i] = word;
-						break;
+						return true;
 					}
 				}
-				
-				
-				//Remove names from dictionary
-				//dictionary.remove(dictionary.size()-1);
-				//dictionary.remove(dictionary.size()-1);
 			}
 		}
-		
+		return false;
+	}
+	
+	//Returns true if all passwords are cracked. Otherwise, false.
+	private static boolean finished()
+	{
+		for(int i = 0; i < decrypted.length; i++)
+		{
+			if(decrypted[i] == null)
+				return false;
+		}
+		return true;
 	}
 	
 	/* dict is the dictionary that the mangled word will be added to */
 	private static void mangleWord(TreeSet<String> dict, String word)
 	{
-		//casePermutations(word);
+		casePermutations(word.toLowerCase(), dict);
 		
 		//Prepend character and append character
 		for(int character = 32; character < 128; character++)
@@ -179,7 +168,7 @@ public class PasswordCrack {
 		
 	}
 	
-	private static void casePermutations(String w, ArrayList<String> mangled){
+	private static void casePermutations(String w, TreeSet<String> mangled){
 		char[] word = w.toCharArray();
 		int n = (int) Math.pow(2, word.length);
 		for (int i = 0; i < n; i++){

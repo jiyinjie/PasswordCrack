@@ -7,6 +7,8 @@ public class Password {
 	private String uid;
 	private String gid;
 	private String fullname;
+	private String firstname;
+	private String lastname;
 	private String homedir;
 	private String shell;
 	
@@ -22,6 +24,13 @@ public class Password {
 		fullname = parts[4];
 		//homedir = parts[5];
 		//shell = parts[6];
+		
+		String[] split = fullname.split(" ");
+		fullname = split[0]+split[1];
+		firstname = split[0];
+		lastname = split[1];
+		
+
 	}
 
 	public String getAccount() {
@@ -47,6 +56,16 @@ public class Password {
 
 	public String getFullname() {
 		return fullname;
+	}
+	
+	public String getFirstName()
+	{
+		return firstname;
+	}
+	
+	public String getLastName()
+	{
+		return lastname;
 	}
 
 	public String getHomedir() {
