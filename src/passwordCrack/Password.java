@@ -18,8 +18,8 @@ public class Password {
 		uid = parts[2];
 		gid = parts[3];
 		fullname = parts[4];
-		homedir = parts[5];
-		shell = parts[6];		
+		//homedir = parts[5];
+		//shell = parts[6];
 	}
 
 	public String getAccount() {
@@ -27,7 +27,8 @@ public class Password {
 	}
 
 	public String getPasswordEncrypted() {
-		return passwordEncrypted;
+		//TODO: Band-aid fix. Better to parse passwordEncrypted correctly in constructor
+		return salt+passwordEncrypted; 
 	}
 
 	public String getSalt() {
