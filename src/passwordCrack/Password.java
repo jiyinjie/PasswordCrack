@@ -11,12 +11,14 @@ public class Password {
 	private String shell;
 	
 	public Password(String input){
+		//TODO: Add error checking
 		String[] parts = input.split(":");
 		account = parts[0];
 		salt = parts[1].substring(0,2);
 		passwordEncrypted = parts[1];
 		uid = parts[2];
 		gid = parts[3];
+		//TODO: split by first and last name
 		fullname = parts[4];
 		//homedir = parts[5];
 		//shell = parts[6];

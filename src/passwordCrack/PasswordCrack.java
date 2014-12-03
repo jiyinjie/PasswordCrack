@@ -5,12 +5,12 @@ import java.io.DataInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.InputStreamReader;
-import java.util.ArrayList;
-
+import java.util.*;
 public class PasswordCrack {
 	
-	private static ArrayList<String> dictionary;
-	private static ArrayList<String> mangled_dictionary;
+	private static TreeSet<String> dictionary;
+	private static TreeSet<String> mangled_dictionary;
+	
 	private static ArrayList<Password> encrypted;
 	private static String[] decrypted;
 	
@@ -18,9 +18,10 @@ public class PasswordCrack {
 	public static void main (String[]args){
 
 		encrypted = new ArrayList<Password>();
-		mangled_dictionary = new ArrayList<String>();
+		mangled_dictionary = new TreeSet<String>();
+		dictionary = new TreeSet<String>();
 		
-		dictionary = parseInput(args[0]);
+		dictionary.addAll(parseInput(args[0]));
 		processEncryption(parseInput(args[1]));
 		decrypted = new String[encrypted.size()];
 
@@ -66,6 +67,7 @@ public class PasswordCrack {
 	
 	private static void dictionaryAttack()
 	{
+		Iterator<String> dict_i;
 		
 		//Check passwords against normal dictionary words
 		for(int enc_i= 0; enc_i < encrypted.size(); enc_i++)
@@ -75,13 +77,16 @@ public class PasswordCrack {
 			String salt = p.getSalt();
 			
 			//Adds username and fullname to dictionary
+			//TODO:Add fullname, last name, and first name
 			dictionary.add(p.getAccount());
 			dictionary.add(p.getFullname());
 			
-			//Check current password aaginst dictionary word
-			for(int dict_i = 0; dict_i < dictionary.size(); dict_i++)
+			dict_i= dictionary.iterator();
+			
+			//Check current password against dictionary word
+			while(dict_i.hasNext())
 			{
-				String word = dictionary.get(dict_i);
+				String word = dict_i.next();
 				String guess = jcrypt.crypt(salt, word);
 				
 				if(encrypted_password.equals(guess))
@@ -97,29 +102,32 @@ public class PasswordCrack {
 			//dictionary.remove(dictionary.size()-1);
 		}
 		
+		dict_i = dictionary.iterator();
 		//Mangle Dictionary
-		for(int i = 0; i < dictionary.size(); i++)
+		while(dict_i.hasNext())
 		{
-			mangleWord(mangled_dictionary, dictionary.get(i));
+			mangleWord(mangled_dictionary, dict_i.next());
 		}
+		
 		
 		//Check password against mangled dictionary words
 		for(int enc_i= 0; enc_i < encrypted.size(); enc_i++)
 		{
 			if(decrypted[enc_i] == null)
 			{
+				dict_i = mangled_dictionary.iterator();
 				Password p = encrypted.get(enc_i);
 				String encrypted_password = p.getPasswordEncrypted();
 				String salt = p.getSalt();
 				
 				//Adds username and fullname to dictionary
-				dictionary.add(p.getAccount());
-				dictionary.add(p.getFullname());
+				//dictionary.add(p.getAccount());
+				//dictionary.add(p.getFullname());
 				
 				//Check passwords against normal dictionary words
-				for(int dict_i = 0; dict_i < mangled_dictionary.size(); dict_i++)
+				while(dict_i.hasNext())
 				{
-					String word = mangled_dictionary.get(dict_i);
+					String word = dict_i.next();
 					String guess = jcrypt.crypt(salt, word);
 					
 					if(encrypted_password.equals(guess))
@@ -131,21 +139,17 @@ public class PasswordCrack {
 				
 				
 				//Remove names from dictionary
-				dictionary.remove(dictionary.size()-1);
-				dictionary.remove(dictionary.size()-1);
+				//dictionary.remove(dictionary.size()-1);
+				//dictionary.remove(dictionary.size()-1);
 			}
 		}
 		
 	}
 	
 	/* dict is the dictionary that the mangled word will be added to */
-	private static void mangleWord(ArrayList<String> dict, String word)
+	private static void mangleWord(TreeSet<String> dict, String word)
 	{
-		
-		/* 1. Treat each word as a bitmap where 0 represents an uncapitalized letter and 1 represents a 
-		 *    capitalized letter.
-		 * 2. Keep adding one to the bitmap until bitmap is all 1s
-		 */
+		//casePermutations(word);
 		
 		//Prepend character and append character
 		for(int character = 32; character < 128; character++)
