@@ -36,7 +36,8 @@ EMAIL: nishil94@utexas.edu; jiyinjie@utexas.edu;
 	find every possible which is unlikely.
 
 3.	We are currently cracking 15/20 passwords in the passwd1 list and XX/20 in 
-	the passwd2 list. This meets the 15 or so threshold outlined in the assignment details. Therefore, we believe that we met all requirements.
+	the passwd2 list. This meets the 15 or so threshold outlined in the
+	assignment details. Therefore, we believe that we met all requirements.
 
 4.	We used the dictionary provided by Dr. Young, and that dictionary contains
 	390 words.	

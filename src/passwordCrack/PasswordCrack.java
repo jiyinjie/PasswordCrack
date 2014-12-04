@@ -8,8 +8,8 @@ import java.io.InputStreamReader;
 import java.util.*;
 public class PasswordCrack {
 	
-	private static TreeSet<String> dictionary;
-	private static TreeSet<String> mangled_dictionary;
+	private static ArrayList<String> dictionary;
+	private static ArrayList<String> mangled_dictionary;
 	private static ArrayList<Password> encrypted;
 	private static String[] decrypted;
 	private static int found;
@@ -20,8 +20,8 @@ public class PasswordCrack {
 		startTime = System.nanoTime();
 	
 		encrypted = new ArrayList<Password>();
-		dictionary = new TreeSet<String>();
-		mangled_dictionary = new TreeSet<String>();
+		dictionary = new ArrayList<String>();
+		mangled_dictionary = new ArrayList<String>();
 		dictionary.addAll(parseInput(args[0]));
 		processEncryption(parseInput(args[1]));
 		decrypted = new String[encrypted.size()];
@@ -85,7 +85,7 @@ public class PasswordCrack {
 			if(mangles == 0)
 			{
 				check(dictionary);
-				mangled_dictionary = new TreeSet<String>(dictionary); 
+				mangled_dictionary = new ArrayList<String>(dictionary); 
 			}
 			else
 			{
@@ -98,14 +98,14 @@ public class PasswordCrack {
 				
 				check(mangled_dictionary);
 			}
-			dictionary = new TreeSet<String>(mangled_dictionary);
-			mangled_dictionary = new TreeSet<String>();
+			dictionary = new ArrayList<String>(mangled_dictionary);
+			mangled_dictionary = new ArrayList<String>();
 			//System.gc();
 			mangles++;
 		}
 	}
 	//The check function determines if any word in the given dictionary dict is a password for any user.
-	private static boolean check(TreeSet<String> dict)
+	private static boolean check(ArrayList<String> dict)
 	{
 		Iterator<String> it = dict.iterator();
 		while(it.hasNext())
@@ -144,7 +144,7 @@ public class PasswordCrack {
 					decrypted[enc_i] = word;
 					long endTime = System.nanoTime();
 					long duration = (endTime-startTime)/1000000;
-					System.out.println("TIMESTAMP: "+duration+"ms "+p.getAccount()+"'s encrypted password is "+p.getPasswordEncrypted()+", and  the decrypted password is "+word+". ("+found+" out of "+encrypted.size()+" found)");
+					System.out.println("TIMESTAMP: "+duration+"ms "+p.getAccount()+"'s encrypted password is "+p.getPasswordEncrypted()+", and the decrypted password is "+word+". ("+found+" out of "+encrypted.size()+" found)");
 					return true;
 				}
 			}
@@ -155,10 +155,41 @@ public class PasswordCrack {
 	/* dict is the dictionary that the mangled word will be added to */
 	private static void mangleWord(String word)
 	{
-		word = word.toLowerCase();
 		//if(times > 0)
 		{
-			casePermutations(word);
+			//casePermutations(word);
+			
+			//UPPERCASE String
+			mangled_dictionary.add(word.toUpperCase());
+			
+			//lowercase string
+			mangled_dictionary.add(word.toLowerCase());
+			
+			//Capitalize string
+			char[] word_array = word.toCharArray();
+			word_array[0] = Character.toUpperCase(word_array[0]);
+			mangled_dictionary.add(new String(word_array));
+			
+			//uNCAPITLIZE string
+			word_array = word.toCharArray();
+			word_array[0] = Character.toLowerCase(word_array[0]);
+			for(int index = 1; index < word_array.length; index++)
+			{
+				word_array[index] = Character.toUpperCase(word_array[index]);
+			}
+			mangled_dictionary.add(new String(word_array));
+			
+			//tOgGlE case of string
+			word_array = word.toCharArray();
+			for(int index = 0; index < word_array.length; index++)
+			{
+				if(word_array[index] >= 'a' && word_array[index]<='z')
+					word_array[index] = Character.toUpperCase(word_array[index]);
+				else if(word_array[index] >= 'A' && word_array[index]<='Z')
+					word_array[index] = Character.toLowerCase(word_array[index]);
+			}
+			mangled_dictionary.add(new String(word_array));
+
 			
 			//Prepend character and append character
 			for(int character = 32; character < 128; character++)
@@ -166,14 +197,15 @@ public class PasswordCrack {
 				String c = ""+(char)character;
 				mangled_dictionary.add(word+c);
 				mangled_dictionary.add(c+word);
-
 			}
 			
-			//Delete first character
-			mangled_dictionary.add(word.substring(1));
-
-			//Delete last character
-			mangled_dictionary.add(word.substring(0, word.length()-1));
+			if(word.length() > 1)
+			{
+				//Delete first character
+				mangled_dictionary.add(word.substring(1));
+				//Delete last character
+				mangled_dictionary.add(word.substring(0, word.length()-1));
+			}
 	
 			//Reverse string
 			String reverse = new StringBuilder(word).reverse().toString();
@@ -185,6 +217,16 @@ public class PasswordCrack {
 			//Reflect string
 			mangled_dictionary.add(word+reverse);
 			mangled_dictionary.add(reverse+word);
+			
+			/*Common substitutions*/
+			char[] letter = {'l', 'e', 'o'};
+			char[] num = {'1','3','0'};
+			//TODO: iterate through all n! possibilities as opposed to just subbing in 1 letter at a time
+			for(int k = 0; k < letter.length; k++)
+			{
+				checkWord(word.replace(letter[k], num[k]));
+			}
+
 		}
 		
 	}
