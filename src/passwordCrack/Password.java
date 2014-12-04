@@ -54,7 +54,7 @@ public class Password {
 		return gid;
 	}
 
-	public String getFullname() {
+	public String getFullName() {
 		return fullname;
 	}
 	
