@@ -10,7 +10,6 @@ public class PasswordCrack {
 	
 	private static TreeSet<String> dictionary;
 	private static TreeSet<String> mangled_dictionary;
-	private static TreeSet<String> double_mangled_dictionary;
 	private static ArrayList<Password> encrypted;
 	private static String[] decrypted;
 	
@@ -19,7 +18,7 @@ public class PasswordCrack {
 
 		encrypted = new ArrayList<Password>();
 		dictionary = new TreeSet<String>();
-		
+		mangled_dictionary = new TreeSet<String>();
 		dictionary.addAll(parseInput(args[0]));
 		processEncryption(parseInput(args[1]));
 		decrypted = new String[encrypted.size()];
@@ -75,18 +74,29 @@ public class PasswordCrack {
 			dictionary.add(encrypted.get(i).getAccount());
 		}
 		
+		int mangles = 0;
 		Iterator<String> dict_i;
-		
-		//Check words in dictionary
-		dict_i = dictionary.iterator();		
-		check(dictionary);
-		
-		//Check password against normal and mangled-once dictionary words
-		while(dict_i.hasNext() && !finished())
+		while(!finished())
+		{
+			if(mangles == 0)
 			{
-				String word = dict_i.next();
-				mangleWord(word, 2);		
+				check(dictionary);
+				mangled_dictionary = new TreeSet<String>(dictionary); 
 			}
+			else
+			{
+				dict_i = dictionary.iterator();	
+				while(dict_i.hasNext() && !finished())
+				{
+					String word = dict_i.next();
+					mangleWord(word);		
+				}
+			}
+			dictionary = new TreeSet<String>(mangled_dictionary);
+			mangled_dictionary = new TreeSet<String>();
+			System.gc();
+			mangles++;
+		}
 	}
 	//The check function determines if any word in the given dictionary dict is a password for any user.
 	private static boolean check(TreeSet<String> dict)
@@ -125,6 +135,7 @@ public class PasswordCrack {
 				if(encrypted_password.equals(guess))
 				{
 					decrypted[enc_i] = word;
+					System.out.println(word);
 					return true;
 				}
 			}
@@ -133,49 +144,52 @@ public class PasswordCrack {
 	}
 	
 	/* dict is the dictionary that the mangled word will be added to */
-	private static void mangleWord(String word, int times)
+	private static void mangleWord(String word)
 	{
-		if(times > 0)
+		word = word.toLowerCase();
+		//if(times > 0)
 		{
-			casePermutations(word.toLowerCase(), times);
+			casePermutations(word);
 			
 			//Prepend character and append character
 			for(int character = 32; character < 128; character++)
 			{
 				String c = ""+(char)character;
 				checkWord(word+c);
-				mangleWord(word+c, times-1);
+				mangled_dictionary.add(word+c);
 				checkWord(c+word);
-				mangleWord(c+word, times-1);
+				mangled_dictionary.add(c+word);
+
 			}
 			
 			//Delete first character
 			checkWord(word.substring(1));
-			mangleWord(word.substring(1), times-1);
-			
+			mangled_dictionary.add(word.substring(1));
+
 			//Delete last character
 			checkWord(word.substring(0, word.length()-1));
-			mangleWord(word.substring(0, word.length()-1), times-1);
+			mangled_dictionary.add(word.substring(0, word.length()-1));
+
 	
 			//Reverse string
 			String reverse = new StringBuilder(word).reverse().toString();
 			checkWord(reverse);
-			mangleWord(reverse, times-1);
+			mangled_dictionary.add(reverse);
 	
 			//Duplicate the string
 			checkWord(word+word);
-			mangleWord(word+word, times-1);
+			mangled_dictionary.add(word+word);
 			
 			//Reflect string
 			checkWord(word+reverse);
-			mangleWord(word+reverse, times-1);
+			mangled_dictionary.add(word+reverse);
 			checkWord(reverse+word);
-			mangleWord(reverse+word, times-1);
+			mangled_dictionary.add(reverse+word);
 		}
 		
 	}
 	
-	private static void casePermutations(String w, int times){
+	private static void casePermutations(String w){
 		char[] word = w.toCharArray();
 		int n = (int) Math.pow(2, word.length);
 		for (int i = 0; i < n; i++){
@@ -189,7 +203,6 @@ public class PasswordCrack {
 				}
 			}
 			checkWord(new String(permutation));
-			mangleWord(new String(permutation), times-1);
 		}
 	}
 	
