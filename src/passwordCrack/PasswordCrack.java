@@ -12,17 +12,21 @@ public class PasswordCrack {
 	private static TreeSet<String> mangled_dictionary;
 	private static ArrayList<Password> encrypted;
 	private static String[] decrypted;
-	
+	private static int found;
+	private static long startTime;
 	
 	public static void main (String[]args){
-
+		
+		startTime = System.nanoTime();
+	
 		encrypted = new ArrayList<Password>();
 		dictionary = new TreeSet<String>();
 		mangled_dictionary = new TreeSet<String>();
 		dictionary.addAll(parseInput(args[0]));
 		processEncryption(parseInput(args[1]));
 		decrypted = new String[encrypted.size()];
-
+		found = 0;
+		
 		dictionaryAttack();
 		
 		for(int i = 0; i < decrypted.length; i++)
@@ -91,10 +95,12 @@ public class PasswordCrack {
 					String word = dict_i.next();
 					mangleWord(word);		
 				}
+				
+				check(mangled_dictionary);
 			}
 			dictionary = new TreeSet<String>(mangled_dictionary);
 			mangled_dictionary = new TreeSet<String>();
-			System.gc();
+			//System.gc();
 			mangles++;
 		}
 	}
@@ -134,8 +140,11 @@ public class PasswordCrack {
 				
 				if(encrypted_password.equals(guess))
 				{
+					found++;
 					decrypted[enc_i] = word;
-					System.out.println(word);
+					long endTime = System.nanoTime();
+					long duration = (endTime-startTime)/1000000;
+					System.out.println("TIMESTAMP: "+duration+"ms "+p.getAccount()+"'s encrypted password is "+p.getPasswordEncrypted()+", and  the decrypted password is "+word+". ("+found+" out of "+encrypted.size()+" found)");
 					return true;
 				}
 			}
@@ -155,35 +164,26 @@ public class PasswordCrack {
 			for(int character = 32; character < 128; character++)
 			{
 				String c = ""+(char)character;
-				checkWord(word+c);
 				mangled_dictionary.add(word+c);
-				checkWord(c+word);
 				mangled_dictionary.add(c+word);
 
 			}
 			
 			//Delete first character
-			checkWord(word.substring(1));
 			mangled_dictionary.add(word.substring(1));
 
 			//Delete last character
-			checkWord(word.substring(0, word.length()-1));
 			mangled_dictionary.add(word.substring(0, word.length()-1));
-
 	
 			//Reverse string
 			String reverse = new StringBuilder(word).reverse().toString();
-			checkWord(reverse);
 			mangled_dictionary.add(reverse);
 	
 			//Duplicate the string
-			checkWord(word+word);
 			mangled_dictionary.add(word+word);
 			
 			//Reflect string
-			checkWord(word+reverse);
 			mangled_dictionary.add(word+reverse);
-			checkWord(reverse+word);
 			mangled_dictionary.add(reverse+word);
 		}
 		
