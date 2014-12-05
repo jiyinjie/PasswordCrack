@@ -219,12 +219,12 @@ public class PasswordCrack {
 			mangled_dictionary.add(reverse+word);
 			
 			/*Common substitutions*/
-			char[] letter = {'l', 'e', 'o'};
-			char[] num = {'1','3','0'};
+			char[] letter = {'l', 'L', 'e', 'E', 'O', 'o', 'S', 's', 'a', 'a', 'Z', 'B', 't', 's', 'S', 'H', 'i', 'I', 'b'};
+			char[] sym =    {'1', '1', '3', '3', '0', '0', '$', '$', '@', '4', '2', '8', '+', '5', '5', '4', '|', '|', '6'};
 			//TODO: iterate through all n! possibilities as opposed to just subbing in 1 letter at a time
 			for(int k = 0; k < letter.length; k++)
 			{
-				checkWord(word.replace(letter[k], num[k]));
+				checkWord(word.replace(letter[k], sym[k]));
 			}
 
 		}
