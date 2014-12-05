@@ -8,8 +8,8 @@ import java.io.InputStreamReader;
 import java.util.*;
 public class PasswordCrack {
 	
-	private static ArrayList<String> dictionary;
-	private static ArrayList<String> mangled_dictionary;
+	private static LinkedHashSet<String> dictionary;
+	private static LinkedHashSet<String> mangled_dictionary;
 	private static ArrayList<Password> encrypted;
 	private static String[] decrypted;
 	private static int found;
@@ -20,8 +20,8 @@ public class PasswordCrack {
 		startTime = System.nanoTime();
 	
 		encrypted = new ArrayList<Password>();
-		dictionary = new ArrayList<String>();
-		mangled_dictionary = new ArrayList<String>();
+		dictionary = new LinkedHashSet<String>();
+		mangled_dictionary = new LinkedHashSet<String>();
 		dictionary.addAll(parseInput(args[0]));
 		processEncryption(parseInput(args[1]));
 		decrypted = new String[encrypted.size()];
@@ -60,9 +60,9 @@ public class PasswordCrack {
 		return list;
 	}
 	
-	public static void processEncryption(ArrayList<String> list){
-		for (int i = 0; i < list.size(); i ++){
-			Password processed = new Password(list.get(i));
+	public static void processEncryption(ArrayList<String> arrayList){
+		for (int i = 0; i < arrayList.size(); i ++){
+			Password processed = new Password(arrayList.get(i));
 			encrypted.add(processed);
 		}
 	}
@@ -85,7 +85,7 @@ public class PasswordCrack {
 			if(mangles == 0)
 			{
 				check(dictionary);
-				mangled_dictionary = new ArrayList<String>(dictionary); 
+				mangled_dictionary = new LinkedHashSet<String>(dictionary); 
 			}
 			else
 			{
@@ -98,14 +98,14 @@ public class PasswordCrack {
 				
 				check(mangled_dictionary);
 			}
-			dictionary = new ArrayList<String>(mangled_dictionary);
-			mangled_dictionary = new ArrayList<String>();
+			dictionary = new LinkedHashSet<String>(mangled_dictionary);
+			mangled_dictionary = new LinkedHashSet<String>();
 			//System.gc();
 			mangles++;
 		}
 	}
 	//The check function determines if any word in the given dictionary dict is a password for any user.
-	private static boolean check(ArrayList<String> dict)
+	private static boolean check(LinkedHashSet<String> dict)
 	{
 		Iterator<String> it = dict.iterator();
 		while(it.hasNext())
